@@ -512,6 +512,47 @@ def overfit_one_batch(cfg: Config, n: int = 16, steps: int = 60) -> list[float]:
     return hist
 
 
+def time_one_epoch(cfg: Config) -> dict:
+    """Đo thời gian 1 epoch train + 1 lượt val với công thức nền (GUIDE 7, "Bạn có đủ GPU không?").
+
+    Không lưu checkpoint, không ghi predictions, không dùng test. Trả về giây/epoch và ước lượng cả lần chạy.
+    """
+    set_seed(cfg.seed)
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    train_df, val_df, _ = D.load_split(cfg.labels_dir, cfg.fold)
+    train_loader = D.make_loader(train_df, cfg.images_dir, D.build_transforms(True, cfg.img_size, cfg.aug),
+                                 cfg.batch_size, True, cfg.sampler, cfg.num_workers, cfg.seed, cfg.preload)
+    val_loader = D.make_loader(val_df, cfg.images_dir, D.build_transforms(False, cfg.img_size), cfg.batch_size * 2,
+                               False, None, cfg.num_workers, cfg.seed, cfg.preload)
+    model = M.build_model(cfg.backbone, True, D.NUM_CLASSES, cfg.drop_rate, cfg.init, cfg.drop_path_rate).to(device)
+    if cfg.channels_last:
+        model = model.to(memory_format=torch.channels_last)
+    criterion = L.build_criterion("ce").to(device)
+    optimizer = build_optimizer(model, cfg)
+    scheduler = build_scheduler(optimizer, cfg, len(train_loader))
+    scaler = torch.amp.GradScaler("cuda", enabled=cfg.amp and device.type == "cuda")
+    if device.type == "cuda":
+        torch.cuda.reset_peak_memory_stats()
+    _sync(device)
+    t0 = time.perf_counter()
+    tr = train_one_epoch(model, train_loader, criterion, optimizer, scheduler, scaler, cfg, device)
+    _sync(device)
+    t_train = time.perf_counter() - t0
+    t0 = time.perf_counter()
+    _, yv, lv, _ = evaluate(model, val_loader, device=device, amp=cfg.amp)
+    _sync(device)
+    t_val = time.perf_counter() - t0
+    out = {"backbone": cfg.backbone, "batch_size": cfg.batch_size, "img_size": cfg.img_size,
+           "train_epoch_s": t_train, "val_pass_s": t_val, "train_img_per_s": len(train_loader) * cfg.batch_size / t_train,
+           "peak_mem_GB": torch.cuda.max_memory_allocated() / 1e9 if device.type == "cuda" else float("nan"),
+           "train_loss_ep1": tr["train_loss"], "val_macro_f1_ep1": metrics_from_logits(yv, lv)["macro_f1"],
+           "gpu": env_info()["gpu"]}
+    del model, optimizer, train_loader, val_loader
+    if device.type == "cuda":
+        torch.cuda.empty_cache()
+    return out
+
+
 # ----------------------------------------------------------------------------- CLI
 def _cast(value: str, type_str: str):
     if value.lower() in ("none", "null") and "None" in type_str:
