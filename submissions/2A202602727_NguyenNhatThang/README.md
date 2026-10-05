@@ -3,13 +3,13 @@
 Bài làm cá nhân Lab Day 2 (Track 4): so sánh backbone, công thức huấn luyện và phương pháp suy luận trên DeepWeeds, fold 0.
 Đề bài, quy tắc và thang điểm: [`README.md`](../../README.md), [`GUIDE.md`](../../GUIDE.md), [`RUBRIC.md`](../../RUBRIC.md) ở gốc repo.
 
-## Trạng thái hiện tại (cập nhật 2026-10-03)
+## Trạng thái hiện tại (cập nhật 2026-10-05)
 
 | Bước | Trạng thái |
 |---|---|
-| Chuẩn bị (fork, thư mục bài làm, GPU, dữ liệu + MD5, nơi lưu bền) | ✅ Xong. Đã chạy trên Colab |
-| Code `code/` (hoàn thiện mọi `TODO` của `starter/`) | ✅ Đã viết. Kiểm tra cú pháp xong. Phần thật mới chạy tới ô test trên Colab |
-| Bước 0: EDA, kiểm tra pipeline | ⏳ Ô đã có trong notebook, cần chạy và lưu output |
+| Chuẩn bị (fork, thư mục bài làm, GPU, dữ liệu + MD5, nơi lưu bền) | ✅ Xong. Đã chạy trên Colab T4 (2026-10-03): 17.509 ảnh, MD5 OK |
+| Code `code/` (hoàn thiện mọi `TODO` của `starter/`) | ✅ Đã viết. Trên Colab: `test_code` 17/17 và `tests/` của repo 38/38 đều OK |
+| Bước 0: EDA, kiểm tra pipeline | ⏳ Ô đã có trong notebook (thông báo/assert đã viết lại rõ ràng 2026-10-05), cần chạy và lưu output |
 | Bước 0: ngân sách GPU (đo 1 epoch mỗi backbone, lập kế hoạch) | ⏳ Cần chạy ô đo, sau đó **chốt số epoch (12 hay 10) và số backbone làm ablation (1 hay 2)** |
 | Bước 1 → 5 | ⬜ Chưa chạy. Ô đã viết sẵn, nằm sau dòng "⛔ Hết Bước 0" trong notebook |
 
@@ -21,8 +21,8 @@ ghi quyết định vào mục *Nhật ký quyết định* bên dưới, rồi 
 - **Google Colab miễn phí, GPU T4.** Colab miễn phí không có hạn mức GPU công bố, nên chạy nhiều phiên. `GPU_BUDGET_H` trong notebook là ngân sách tự đặt.
 - Notebook: [`code/lab_day2.ipynb`](code/lab_day2.ipynb). Mở trên Colab: *File → Open notebook → GitHub* →
   `nhat-thang/K4-DAY02-NguyenNhatThang-2A202602727` → `submissions/2A202602727_NguyenNhatThang/code/lab_day2.ipynb`.
-- Phiên bản thư viện: ô đầu notebook in ra python / torch / torchvision / timm / numpy / pandas / sklearn.
-  **TODO:** chép dòng đó vào đây sau lần chạy thật.
+- Phiên bản thư viện (Colab, 2026-10-03): python 3.13.15 · torch 2.11.0+cu130 · torchvision 0.26.0+cu130 · timm 1.0.29 ·
+  numpy 2.1.3 · pandas 2.2.3 · sklearn 1.6.1 · GPU Tesla T4 · 2 nhân CPU.
 - Dữ liệu: `images.zip` (MD5 `b7b30f96d466fba86016aa5a26606e0f`) đặt ở Google Drive `MyDrive/K4-day02/images.zip`.
   Notebook chép zip về `/content/data`, kiểm tra MD5, giải nén, rồi tải `labels.csv`, `train/val/test_subset0.csv` từ GitHub của tác giả.
   Không có zip trên Drive thì notebook tải từ Zenodo.
